@@ -32,6 +32,7 @@ export const loginUser = async (
   const { data } = await instance.post("/auth/login", entry);
   return data;
 };
+
 export const getUser = async (): Promise<IUserResponse> => {
   const token = await getCookie("accessToken")!;
   const { data } = await instance.get("/auth/me", {

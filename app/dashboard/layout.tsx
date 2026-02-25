@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 
 import {
   SidebarProvider,
@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
-import { socket } from "@/configs/socket.config";
 import { SocketProvider } from "@/providers/Socket";
+import { useGetOrdersPrefetch } from "@/hooks/useCompany";
+import { Auth } from "@/providers/AuthContext";
 
 export default function DashboardLayout({
   children,

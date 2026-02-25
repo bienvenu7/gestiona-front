@@ -41,3 +41,30 @@ export type IUserResponse = Omit<ICreateUser, "password"> & {
 };
 
 export type IUserLogin = Pick<IUser, "email" | "password">;
+
+export type IcreateUserFromOwner = Pick<
+  IUser,
+  "email" | "name" | "role" | "companyId"
+>;
+
+export interface IPaymentStats {
+  total: number;
+  total_paid: number;
+  total_echeance: number;
+  total_complet: number;
+}
+
+export interface ICreateUserResponse extends IcreateUserFromOwner {
+  companyId: string;
+  createdAt: Date;
+}
+
+export interface IClient {
+  number: string;
+  id: string;
+  companyId: string;
+  name: string;
+  createdAt: Date;
+}
+
+export type ICreateClient = Pick<IClient, "name" | "number">;

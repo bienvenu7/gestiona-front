@@ -38,6 +38,7 @@ import {
 } from "@/hooks/useProduct";
 import { Auth } from "@/providers/AuthContext";
 import { useSocket } from "@/providers/Socket";
+import { IProducts, IUploadInterfaceFromFileSokect } from "@/types/socket";
 
 const PAGE_SIZE = 8;
 
@@ -47,11 +48,7 @@ export default function ProductsPage() {
 
   const { data, isPending: loading } = useGetProducts(state.user?.company.id);
   const { createProducts, error, isPending } = useCreateManyProduct();
-  const {
-    asyncCreateProduct,
-    error: failure,
-    isPending: isCreating,
-  } = useCreateOneProduct();
+  const { asyncCreateProduct, isPending: isCreating } = useCreateOneProduct();
 
   const [products, setProducts] = useState<IProducts[]>([]);
   const [addOpen, setAddOpen] = useState(false);
@@ -155,8 +152,6 @@ export default function ProductsPage() {
       })
       .catch((e) => console.log(e));
   };
-
-  console.log(error);
 
   useEffect(() => {
     if (data) setProducts(data.data);

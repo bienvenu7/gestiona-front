@@ -1,6 +1,7 @@
 import { getCookie } from "@/configs/cookie.config";
 import { instance } from "@/configs/instance";
 import { IPs } from "@/hooks/useProduct";
+import { IProducts } from "@/types/socket";
 
 export const createFromFile = async (d: IPs) => {
   const token = await getCookie("accessToken")!;

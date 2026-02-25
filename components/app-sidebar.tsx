@@ -43,9 +43,9 @@ const navItems = [
 export function AppSidebar() {
   const { isLogingOut, logoutFn } = useLogout();
   const pathname = usePathname();
-  const router = useRouter();
 
   const { state } = Auth();
+  const id = state.user?.company.id;
 
   const handleLogout = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,

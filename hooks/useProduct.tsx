@@ -3,7 +3,8 @@ import {
   createOneProduct,
   getProducts,
 } from "@/lib/api/product.api";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { IProducts } from "@/types/socket";
+import { useMutation, usePrefetchQuery, useQuery } from "@tanstack/react-query";
 
 export interface IPs {
   entry: FormData;
@@ -43,4 +44,11 @@ export const useGetProducts = (id: string | undefined) => {
     enabled: id === undefined ? false : true,
   });
   return { error, isPending, data };
+};
+
+export const useGetProductsPrefetch = (id: string | undefined) => {
+  usePrefetchQuery({
+    queryKey: ["get/products"],
+    queryFn: async () => getProducts(id!),
+  });
 };
