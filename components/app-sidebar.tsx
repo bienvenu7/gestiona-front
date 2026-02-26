@@ -62,7 +62,7 @@ export function AppSidebar() {
             <Box className="h-4 w-4 text-white" />
           </div>
           <span className="text-lg font-heading font-bold tracking-tight text-foreground">
-            GESTIONA
+            INVENTERA
           </span>
         </Link>
       </SidebarHeader>

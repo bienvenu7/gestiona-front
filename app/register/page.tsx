@@ -44,7 +44,7 @@ export default function RegisterPage() {
             <Box className="h-6 w-6 text-white" />
           </div>
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-            GESTIONA
+            INVENTERA
           </h1>
           <p className="text-sm text-muted-foreground">
             {"Cr\u00e9ez votre compte professionnel"}
@@ -66,7 +66,7 @@ export default function RegisterPage() {
                 <Label htmlFor="company">{"Nom de l'entreprise"}</Label>
                 <Input
                   id="company"
-                  placeholder="GESTIONA SARL"
+                  placeholder="INVENTERA SARL"
                   required
                   value={registerDta.name}
                   onChange={(e) =>

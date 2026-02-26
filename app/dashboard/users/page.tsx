@@ -143,7 +143,7 @@ export default function UsersPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="jean@gestiona.com"
+                  placeholder="jean@INVENTERA.com"
                   value={newUser.email}
                   onChange={(e) =>
                     setNewUser({ ...newUser, email: e.target.value })

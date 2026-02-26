@@ -52,7 +52,7 @@ export default function OTPPage() {
               <Box className="h-6 w-6 text-white" />
             </div>
             <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-              GESTIONA
+              INVENTERA
             </h1>
           </div>
 

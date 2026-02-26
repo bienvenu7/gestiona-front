@@ -40,7 +40,7 @@ export default function LoginPage() {
             <Box className="h-6 w-6 text-white" />
           </div>
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-            GESTIONA
+            INVENTERA
           </h1>
           <p className="text-sm text-muted-foreground">
             {"La gestion des stocks simplifi\u00e9e"}

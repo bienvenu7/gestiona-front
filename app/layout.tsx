@@ -12,7 +12,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "GESTIONA - Gestion des Stocks",
+  title: "INVENTERA - Gestion des Stocks",
   description:
     "Tableau de bord moderne de gestion des stocks pour votre entreprise",
 };
