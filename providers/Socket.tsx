@@ -1,11 +1,5 @@
 import { socket } from "@/configs/socket.config";
-import React, {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import React, { ReactNode, createContext, useContext, useEffect } from "react";
 import { Socket } from "socket.io-client";
 
 type SocketContextType = Socket | null;

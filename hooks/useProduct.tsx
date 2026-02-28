@@ -39,7 +39,7 @@ export const useCreateOneProduct = () => {
 
 export const useGetProducts = (id: string | undefined) => {
   const { data, error, isPending } = useQuery({
-    queryKey: ["get/products"],
+    queryKey: ["get/products", id],
     queryFn: async () => getProducts(id!),
     enabled: id === undefined ? false : true,
   });

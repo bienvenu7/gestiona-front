@@ -400,6 +400,9 @@ export default function OrdersPage() {
         queryKey: ["get/orders", state.user?.company.id!],
       });
       queryClient.invalidateQueries({
+        queryKey: ["get/products", state.user?.company.id!],
+      });
+      queryClient.invalidateQueries({
         queryKey: ["get/overview-stats", state.user?.company.id!],
       });
       queryClient.invalidateQueries({
