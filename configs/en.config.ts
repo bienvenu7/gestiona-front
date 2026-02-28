@@ -7,6 +7,7 @@ export const config = {
   // API Configuration
   api: {
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
+    baseDevUrl: process.env.NEXT_PUBLIC_API_URL2,
     timeout: parseInt(process.env.NEXT_PUBLIC_API_UR || "10000"),
   },
 

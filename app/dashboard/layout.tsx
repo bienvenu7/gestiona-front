@@ -10,8 +10,6 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SocketProvider } from "@/providers/Socket";
-import { useGetOrdersPrefetch } from "@/hooks/useCompany";
-import { Auth } from "@/providers/AuthContext";
 
 export default function DashboardLayout({
   children,

@@ -50,6 +50,8 @@ export interface IPayementResponse {
   amountPaid: number;
   paymentDate: Date;
   paymentNumber: string;
+  clientPhone: string;
+  clientName: string;
 }
 
 export interface IPaymentData {

@@ -3,7 +3,10 @@ import { config } from "./en.config";
 import { getAccess } from "@/lib/api/authentication.api";
 import { setCookie } from "./cookie.config";
 
-export const baseURL = config.api.baseUrl;
+export const baseURL =
+  (process.env.NODE_ENV === "production"
+    ? config.api.baseUrl
+    : config.api.baseDevUrl) + "/v1/";
 
 export const instance = axios.create({
   baseURL: baseURL,

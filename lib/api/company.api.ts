@@ -3,10 +3,16 @@ import { instance } from "@/configs/instance";
 import {
   ICreateUserResponse,
   IPaymentStats,
+  IStats,
   IUserResponse,
   IcreateUserFromOwner,
 } from "@/types/company";
-import { ICreateOrder, IOrder, IPaymentData } from "@/types/socket";
+import {
+  ICreateOrder,
+  IOrder,
+  IPayementResponse,
+  IPaymentData,
+} from "@/types/socket";
 
 export const getUsers = async (id: string): Promise<ICreateUserResponse[]> => {
   const token = await getCookie("accessToken")!;
@@ -106,8 +112,35 @@ export const getCompanyOrder = async (
 
 export const getPayments = async (
   id: string,
-): Promise<ICreateUserResponse[]> => {
+  startDate: string | null,
+  endDate: string | null,
+): Promise<IPayementResponse[]> => {
   const token = await getCookie("accessToken")!;
+
+  if (startDate && endDate) {
+    const { data } = await instance.get(
+      `/order/payments?id=${id}&startDate=${startDate}&endDate=${endDate}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    return data;
+  }
+
+  if (startDate) {
+    const { data } = await instance.get(
+      `/order/payments?id=${id}&startDate=${startDate}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    return data;
+  }
+
   const { data } = await instance.get(`/order/payments?id=${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -123,5 +156,23 @@ export const getPaymentStats = async (id: string): Promise<IPaymentStats> => {
       Authorization: `Bearer ${token}`,
     },
   });
+  return data;
+};
+
+export const getOverviewStats = async (
+  id: string,
+  startDate: string | null,
+): Promise<IStats> => {
+  const token = await getCookie("accessToken")!;
+
+  const { data } = await instance.get(
+    `/stats/indicators?id=${id}&dateMonth=${startDate}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
   return data;
 };

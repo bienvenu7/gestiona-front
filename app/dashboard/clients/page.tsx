@@ -32,8 +32,12 @@ import { IClient, ICreateClient } from "@/types/company";
 import { formattedDate } from "@/lib/helper";
 import { useCreateClient, useGetClients } from "@/hooks/useClient";
 import { Auth } from "@/providers/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { socket } from "@/configs/socket.config";
 
 const ClientPage = () => {
+  const queryClient = useQueryClient();
+
   const { state } = Auth();
 
   const { data, isPending } = useGetClients(state.user?.company.id);
@@ -51,6 +55,20 @@ const ClientPage = () => {
   useEffect(() => {
     if (data) setUsers(data);
   }, [data]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("new-client", () => {
+      queryClient.invalidateQueries({
+        queryKey: ["get/clients", state.user?.company.id!],
+      });
+    });
+
+    return () => {
+      socket.off("new-client");
+    };
+  }, []);
 
   const handleAddUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

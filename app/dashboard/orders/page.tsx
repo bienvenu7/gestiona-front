@@ -58,12 +58,21 @@ import {
   useGetOrders,
 } from "@/hooks/useCompany";
 import { formatPrice, formattedDate } from "@/lib/helper";
-import { ICart, ICreateOrder, IOrder, IPaymentData } from "@/types/socket";
+import {
+  ICart,
+  ICreateOrder,
+  IOrder,
+  IPayementResponse,
+  IPaymentData,
+} from "@/types/socket";
 import { useSocket } from "@/providers/Socket";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PAGE_SIZE = 8;
 
 export default function OrdersPage() {
+  const queryClient = useQueryClient();
+
   const { state } = Auth();
 
   const socket = useSocket();
@@ -167,6 +176,9 @@ export default function OrdersPage() {
 
     await asyncCreateOrder(orderData)
       .then((e) => {
+        queryClient.invalidateQueries({
+          queryKey: ["get/orders"],
+        });
         // setOrders((prev) => [e, ...prev]);
         setCarts([]);
         setAddOpen(false);
@@ -216,16 +228,6 @@ export default function OrdersPage() {
 
     await asyncCreatePayment(dataToPay)
       .then((el) => {
-        const findIndex = orders.findIndex(
-          (x) => x.orderNumber === el.orderNumber,
-        );
-
-        orders[findIndex] = {
-          ...orders[findIndex],
-          status: el.status,
-          paidAmount: el.paidAmount,
-        };
-        setOrders([...orders]);
         setPayOpen(false);
         setSelectedOrder(null);
       })
@@ -387,12 +389,31 @@ export default function OrdersPage() {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("order-created", (data: IOrder) => {
-      setOrders((prev) => [data, ...prev]);
+    socket.on("order-created", () => {
+      queryClient.invalidateQueries({
+        queryKey: ["get/orders", state.user?.company.id!],
+      });
+    });
+
+    socket.on("Created-payement", () => {
+      queryClient.invalidateQueries({
+        queryKey: ["get/orders", state.user?.company.id!],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get/overview-stats", state.user?.company.id!],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get/payments", state.user?.company.id!],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get/payments-stats", state.user?.company.id!],
+      });
+      // setInitialPayments((prev) => [data, ...prev]);
     });
 
     return () => {
       socket.off("order-created");
+      socket.off("Created-payement");
     };
   }, []);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,13 +28,17 @@ import type { DateRange } from "react-day-picker";
 import { isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns";
 import { Auth } from "@/providers/AuthContext";
 import { useGetPaymentStats, useGetPayments } from "@/hooks/useCompany";
-import { formatPrice } from "@/lib/helper";
+import { formatPrice, formattedDate } from "@/lib/helper";
+import { IPayementResponse } from "@/types/socket";
+import { socket } from "@/configs/socket.config";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PAGE_SIZE = 8;
 
 export default function PaymentsPage() {
+  const queryClient = useQueryClient();
+
   const { state } = Auth();
-  const { data: orders, isPending } = useGetPayments(state.user?.company.id);
   const { data: statistiques, isPending: loading } = useGetPaymentStats(
     state.user?.company.id,
   );
@@ -44,6 +48,42 @@ export default function PaymentsPage() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+  const [initialPayments, setInitialPayments] = useState<IPayementResponse[]>(
+    [],
+  );
+
+  const { data: payments, isPending } = useGetPayments(
+    state.user?.company.id,
+    startDate,
+    endDate,
+  );
+
+  useEffect(() => {
+    if (!payments) {
+      return;
+    }
+
+    return setInitialPayments([...payments]);
+  }, [payments]);
+
+  // useEffect(() => {
+  //   if (!socket) return;
+
+  //   socket.on("Created-payement", (data: IPayementResponse) => {
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["get/payments"],
+  //     });
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["get/payments-stats"],
+  //     });
+  //   });
+
+  //   return () => {
+  //     socket.off("Created-payement");
+  //   };
+  // }, []);
 
   const baseFiltered = useMemo(() => {
     let result = [...initialPayments];
@@ -51,52 +91,38 @@ export default function PaymentsPage() {
       const q = filterOrderId.toLowerCase();
       result = result.filter(
         (p) =>
-          p.orderId.toLowerCase().includes(q) || p.id.toLowerCase().includes(q),
+          p.orderNumber.toLowerCase().includes(q) ||
+          p.id.toLowerCase().includes(q),
       );
     }
-    if (typeFilter !== "all") {
-      result = result.filter((p) => p.type === typeFilter);
-    }
-    if (dateRange?.from) {
-      result = result.filter((p) => {
-        const payDate = parseISO(p.date);
-        if (dateRange.to) {
-          return isWithinInterval(payDate, {
-            start: startOfDay(dateRange.from!),
-            end: endOfDay(dateRange.to),
-          });
-        }
-        return payDate >= startOfDay(dateRange.from!);
-      });
-    }
     return result;
-  }, [filterOrderId, typeFilter, dateRange]);
+  }, [filterOrderId, initialPayments]);
 
-  const tabFiltered = useMemo(() => {
-    if (activeTab === "all") return baseFiltered;
-    if (activeTab === "successful")
-      return baseFiltered.filter((p) => p.status === "successful");
-    if (activeTab === "in-progress")
-      return baseFiltered.filter((p) => p.status === "in-progress");
-    if (activeTab === "failed")
-      return baseFiltered.filter((p) => p.status === "failed");
-    return baseFiltered;
-  }, [baseFiltered, activeTab]);
+  // const tabFiltered = useMemo(() => {
+  //   if (activeTab === "all") return baseFiltered;
+  //   if (activeTab === "successful")
+  //     return baseFiltered.filter((p) => p. === "successful");
+  //   if (activeTab === "in-progress")
+  //     return baseFiltered.filter((p) => p.status === "in-progress");
+  //   if (activeTab === "failed")
+  //     return baseFiltered.filter((p) => p.status === "failed");
+  //   return baseFiltered;
+  // }, [baseFiltered, activeTab]);
 
-  const totalPages = Math.max(1, Math.ceil(tabFiltered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(baseFiltered.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
-  const paginatedPayments = tabFiltered.slice(
+  const paginatedPayments = baseFiltered.slice(
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
 
-  const totalAmount = baseFiltered.reduce((sum, p) => sum + p.amount, 0);
-  const successfulAmount = baseFiltered
-    .filter((p) => p.status === "successful")
-    .reduce((sum, p) => sum + p.amount, 0);
-  const installmentPayments = baseFiltered.filter(
-    (p) => p.type === "installment",
-  );
+  // const totalAmount = baseFiltered.reduce((sum, p) => sum + p.amountPaid, 0);
+  // const successfulAmount = baseFiltered
+  //   .filter((p) => p.status === "successful")
+  //   .reduce((sum, p) => sum + p.amount, 0);
+  // const installmentPayments = baseFiltered.filter(
+  //   (p) => p.type === "installment",
+  // );
 
   const statusStyle = (status: string) => {
     switch (status) {
@@ -234,6 +260,18 @@ export default function PaymentsPage() {
         <DateRangeFilter
           dateRange={dateRange}
           onDateRangeChange={(range) => {
+            if (!range) {
+              setEndDate(null);
+              setStartDate(null);
+            }
+
+            if (range?.from) {
+              setStartDate(startOfDay(range.from!).toISOString());
+            }
+
+            if (range?.to) {
+              setEndDate(endOfDay(range.to!).toISOString());
+            }
             setDateRange(range);
             resetPage();
           }}
@@ -250,32 +288,6 @@ export default function PaymentsPage() {
               setCurrentPage(1);
             }}
           >
-            <div className="px-6 pt-6">
-              <TabsList>
-                <TabsTrigger value="all">
-                  Tous {orders?.length}
-                  {/* ({baseFiltered.length}) */}
-                </TabsTrigger>
-                <TabsTrigger value="successful">
-                  {"R\u00e9ussis"} (
-                  {baseFiltered.filter((p) => p.status === "successful").length}
-                  )
-                </TabsTrigger>
-                <TabsTrigger value="in-progress">
-                  En cours (
-                  {
-                    baseFiltered.filter((p) => p.status === "in-progress")
-                      .length
-                  }
-                  )
-                </TabsTrigger>
-                <TabsTrigger value="failed">
-                  {"\u00c9chou\u00e9s"} (
-                  {baseFiltered.filter((p) => p.status === "failed").length})
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
             <TabsContent value={activeTab} className="mt-0">
               <div className="max-h-[480px] overflow-auto">
                 <Table>
@@ -285,13 +297,22 @@ export default function PaymentsPage() {
                       <TableHead>ID Commande</TableHead>
                       <TableHead className="text-right">Montant</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead>{"M\u00e9thode"}</TableHead>
+                      <TableHead>{"Nom du client"}</TableHead>
+                      <TableHead>{"Email du client"}</TableHead>
                       <TableHead>Date</TableHead>
-                      <TableHead>Statut</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedPayments.length === 0 ? (
+                    {isPending ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="h-24 text-center text-muted-foreground"
+                        >
+                          {"Veillez patienter..."}
+                        </TableCell>
+                      </TableRow>
+                    ) : paginatedPayments.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={7}
@@ -304,22 +325,20 @@ export default function PaymentsPage() {
                       paginatedPayments.map((payment) => (
                         <TableRow key={payment.id}>
                           <TableCell className="font-mono text-xs text-muted-foreground">
-                            {payment.id}
+                            {payment.paymentNumber}
                           </TableCell>
                           <TableCell className="font-mono text-xs">
                             <span className="link-gradient font-medium">
-                              {payment.orderId}
+                              {payment.orderNumber}
                             </span>
                           </TableCell>
                           <TableCell className="text-right font-mono font-medium text-foreground">
-                            {payment.amount.toFixed(2)} &euro;
+                            {formatPrice(payment.amountPaid)}
                           </TableCell>
                           <TableCell>
-                            {payment.type === "installment" ? (
+                            {payment.type === "ECHEANCE" ? (
                               <Badge variant="secondary" className="text-xs">
                                 {"\u00c9ch\u00e9ance"}{" "}
-                                {payment.installmentNumber}/
-                                {payment.totalInstallments}
                               </Badge>
                             ) : (
                               <Badge variant="secondary" className="text-xs">
@@ -328,17 +347,13 @@ export default function PaymentsPage() {
                             )}
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {methodLabel(payment.method)}
+                            {methodLabel(payment.clientName)}
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {payment.date}
+                            {methodLabel(payment.clientPhone)}
                           </TableCell>
-                          <TableCell>
-                            <span
-                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusStyle(payment.status)}`}
-                            >
-                              {statusLabel(payment.status)}
-                            </span>
+                          <TableCell className="text-muted-foreground">
+                            {formattedDate(payment.paymentDate)}
                           </TableCell>
                         </TableRow>
                       ))
@@ -346,11 +361,11 @@ export default function PaymentsPage() {
                   </TableBody>
                 </Table>
               </div>
-              {tabFiltered.length > 0 && (
+              {baseFiltered.length > 0 && (
                 <TablePagination
                   currentPage={safePage}
                   totalPages={totalPages}
-                  totalItems={tabFiltered.length}
+                  totalItems={baseFiltered.length}
                   pageSize={PAGE_SIZE}
                   onPageChange={setCurrentPage}
                 />

@@ -10,7 +10,7 @@ export default function RtProvider({ children }: { children: ReactNode }) {
         defaultOptions: {
           queries: {
             retry: 1,
-            staleTime: 1000 * 60 * 5, // 5 min
+            staleTime: 1000 * 60 * 60, // 1h
             refetchOnWindowFocus: false,
             refetchOnReconnect: false,
           },

@@ -11,7 +11,7 @@ export const useCreateClient = (id: string | undefined) => {
     error,
     isPending,
   } = useMutation({
-    mutationKey: ["create/client"],
+    mutationKey: ["create/client", id],
     mutationFn: async (entry: ICreateClient) =>
       await createNewClientFromCompany(id!, entry),
   });
@@ -20,7 +20,7 @@ export const useCreateClient = (id: string | undefined) => {
 
 export const useGetClients = (id: string | undefined) => {
   const { data, error, isPending } = useQuery({
-    queryKey: ["get/clients"],
+    queryKey: ["get/clients", id],
     queryFn: async () => getClientFromCompany(id!),
     enabled: id === undefined ? false : true,
   });

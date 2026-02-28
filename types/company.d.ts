@@ -67,4 +67,11 @@ export interface IClient {
   createdAt: Date;
 }
 
+export interface IStats {
+  revenue: number;
+  total_orders: number;
+  profit: number;
+  total_products: number;
+}
+
 export type ICreateClient = Pick<IClient, "name" | "number">;

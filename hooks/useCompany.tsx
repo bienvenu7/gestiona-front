@@ -3,6 +3,7 @@ import {
   createPayment,
   createUser,
   getCompanyOrder,
+  getOverviewStats,
   getPaymentStats,
   getPayments,
   getUsers,
@@ -13,7 +14,7 @@ import { useMutation, useQuery, usePrefetchQuery } from "@tanstack/react-query";
 
 export const useGetMembers = (id: string | undefined) => {
   const { data, error, isPending } = useQuery({
-    queryKey: ["get/members"],
+    queryKey: ["get/members", id],
     queryFn: async () => getUsers(id!),
     enabled: id === undefined ? false : true,
   });
@@ -34,17 +35,21 @@ export const useGetOrders = (
   endDate: string | null,
 ) => {
   const { data, error, isPending } = useQuery({
-    queryKey: ["get/orders", `${clientName}`, startDate, endDate],
+    queryKey: ["get/orders", id, clientName, startDate, endDate],
     queryFn: async () => getCompanyOrder(id!, clientName, startDate, endDate),
     enabled: id === undefined ? false : true,
   });
   return { error, isPending, data };
 };
 
-export const useGetPayments = (id: string | undefined) => {
+export const useGetPayments = (
+  id: string | undefined,
+  startDate: string | null,
+  endDate: string | null,
+) => {
   const { data, error, isPending } = useQuery({
-    queryKey: ["get/payments"],
-    queryFn: async () => getPayments(id!),
+    queryKey: ["get/payments", id, startDate, endDate],
+    queryFn: async () => getPayments(id!, startDate, endDate),
     enabled: id === undefined ? false : true,
   });
   return { error, isPending, data };
@@ -52,7 +57,7 @@ export const useGetPayments = (id: string | undefined) => {
 
 export const useGetPaymentStats = (id: string | undefined) => {
   const { data, error, isPending } = useQuery({
-    queryKey: ["get/payments-stats"],
+    queryKey: ["get/payments-stats", id],
     queryFn: async () => getPaymentStats(id!),
     enabled: id === undefined ? false : true,
   });
@@ -108,4 +113,14 @@ export const useCreatePayment = () => {
     mutationFn: async (entry: IPaymentData) => await createPayment(entry),
   });
   return { error, isPending, data, asyncCreatePayment };
+};
+
+export const useGetStatsOverview = (id: string | undefined) => {
+  const now = new Date().toUTCString();
+  const { data, error, isPending } = useQuery({
+    queryKey: ["get/overview-stats", id],
+    queryFn: async () => getOverviewStats(id!, now),
+    enabled: id === undefined ? false : true,
+  });
+  return { error, isPending, data };
 };
