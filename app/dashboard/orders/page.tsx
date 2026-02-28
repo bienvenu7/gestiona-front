@@ -79,7 +79,7 @@ export default function OrdersPage() {
 
   const { data: clients } = useGetClients(state.user?.company.id);
   const { data: products } = useGetProducts(state.user?.company.id);
-  const { asyncCreateOrder, isPending: loading } = useCreateOrder();
+  const { asyncCreateOrder, isPending: loading, error } = useCreateOrder();
   const { asyncCreatePayment, isPending: loadingPayment } = useCreatePayment();
 
   const [searchByClientName, setSearchByClientName] = useState("");
@@ -561,6 +561,11 @@ export default function OrdersPage() {
                   />
                 </div>
               </div>
+              {error && (
+                <span className="font-medium text-foreground">
+                  {error.message}
+                </span>
+              )}
               <button
                 type="button"
                 className="h-10 w-full rounded-lg text-sm font-medium border-primary"
